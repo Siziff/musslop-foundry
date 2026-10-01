@@ -1,0 +1,101 @@
+<div class="musslop-body">
+  {{#unless isGM}}
+    <p class="musslop-hint">{{localize "MUSSLOP.GMOnly"}}</p>
+  {{/unless}}
+
+  <section class="musslop-tracks">
+    <header>
+      <h3>{{localize "MUSSLOP.Tracks"}}</h3>
+      {{#if isGM}}
+        <button type="button" data-action="importZip" title="{{localize 'MUSSLOP.ImportZipHint'}}"><i class="fa-solid fa-file-import"></i> {{localize "MUSSLOP.ImportZip"}}</button>
+        <button type="button" class="icon" data-action="refresh" title="{{localize 'MUSSLOP.Refresh'}}"><i class="fa-solid fa-rotate"></i></button>
+        <input type="file" name="zip" accept=".zip" hidden />
+      {{/if}}
+    </header>
+    {{#if tracks.length}}
+      <div class="musslop-track-list">
+        {{#each tracks}}
+          <button type="button" class="musslop-track {{#if active}}on{{/if}}" data-action="selectTrack" data-slug="{{slug}}">
+            <span class="name">{{name}}</span>
+            <span class="meta">{{n}} parts{{#if bpm}} · {{bpm}} BPM{{/if}}</span>
+          </button>
+        {{/each}}
+      </div>
+    {{else}}
+      <p class="musslop-hint">{{localize "MUSSLOP.NoTracks"}}</p>
+    {{/if}}
+    {{#if loading}}<p class="musslop-hint"><i class="fa-solid fa-spinner fa-spin"></i> {{loading.done}} / {{loading.total}}</p>{{/if}}
+  </section>
+
+  {{#if hasTrack}}
+  <section class="musslop-stage">
+    <div class="musslop-now">
+      <div class="label">{{#if playing}}{{localize "MUSSLOP.NowPlaying"}}{{else}}{{localize "MUSSLOP.Ready"}}{{/if}}</div>
+      <div class="big">{{nowLabel}}</div>
+      <div class="sub">{{#if playing}}<i class="fa-solid fa-wave-square"></i> {{localize "MUSSLOP.Pass"}} {{pass}}{{else}}{{trackName}}{{/if}}</div>
+    </div>
+    <div class="musslop-next {{#if next}}armed{{/if}}">
+      <div class="label">{{localize "MUSSLOP.UpNext"}}</div>
+      <div class="big">{{#if next}}{{next}}{{else}}—{{/if}}</div>
+      <div class="sub">{{etaText}}</div>
+    </div>
+  </section>
+
+  {{#if isGM}}
+  <section class="musslop-transport">
+    {{#if playing}}
+      <button type="button" data-action="stop"><i class="fa-solid fa-stop"></i> {{localize "MUSSLOP.Stop"}}</button>
+      <button type="button" class="go" data-action="next"><i class="fa-solid fa-forward-step"></i> {{localize "MUSSLOP.Next"}}</button>
+      <button type="button" data-action="cancel" {{#unless next}}disabled{{/unless}}><i class="fa-solid fa-xmark"></i> {{localize "MUSSLOP.Cancel"}}</button>
+      <button type="button" data-action="fade"><i class="fa-solid fa-arrow-down-wide-short"></i> {{localize "MUSSLOP.Fade"}}</button>
+    {{else}}
+      <button type="button" class="primary" data-action="play"><i class="fa-solid fa-play"></i> {{localize "MUSSLOP.Play"}}</button>
+    {{/if}}
+    <span class="musslop-mode">
+      <span class="label">{{localize "MUSSLOP.Transition"}}:</span>
+      {{#each modes}}<button type="button" class="pill {{#if on}}on{{/if}}" data-action="mode" data-mode="{{id}}">{{label}}</button>{{/each}}
+    </span>
+  </section>
+  {{/if}}
+
+  {{#if scenes.length}}
+  <section>
+    <h3>{{localize "MUSSLOP.Scenes"}}</h3>
+    <div class="musslop-pads">
+      {{#each scenes}}
+        <button type="button" class="pad scene {{#if on}}on{{/if}} {{#if queued}}queued{{/if}}" style="--c: {{color}}" data-action="scene" data-k="{{k}}" {{#unless ../isGM}}disabled{{/unless}}>
+          {{#if hotkey}}<kbd>⇧{{hotkey}}</kbd>{{/if}}
+          <span class="name">{{name}}</span>
+          <span class="sub">{{partName}} · {{cue}}</span>
+          {{#if on}}<span class="state">{{localize "MUSSLOP.OnAir"}}</span>{{/if}}
+          {{#if queued}}<span class="state">{{localize "MUSSLOP.Queued"}}</span>{{/if}}
+        </button>
+      {{/each}}
+    </div>
+  </section>
+  {{/if}}
+
+  <section>
+    <h3>{{localize "MUSSLOP.Parts"}}</h3>
+    <div class="musslop-pads">
+      {{#each parts}}
+        <button type="button" class="pad {{#if on}}on{{/if}} {{#if queued}}queued{{/if}}" style="--c: {{color}}" data-action="part" data-index="{{i}}" {{#unless ../isGM}}disabled{{/unless}} {{#if oneShot}}title="{{localize 'MUSSLOP.BuildUp'}}"{{/if}}>
+          {{#if key}}<kbd>{{key}}</kbd>{{/if}}
+          <span class="name">{{name}}{{#if oneShot}} →{{/if}}</span>
+          <span class="sub">{{dur}}</span>
+          {{#if on}}<span class="state">{{localize "MUSSLOP.OnAir"}}</span>{{/if}}
+          {{#if queued}}<span class="state">{{localize "MUSSLOP.Queued"}}</span>{{/if}}
+        </button>
+      {{/each}}
+    </div>
+  </section>
+  {{/if}}
+
+  <footer class="musslop-foot">
+    <label><i class="fa-solid fa-volume-high"></i> {{localize "MUSSLOP.Volume"}}
+      <input type="range" name="volume" min="0" max="100" value="{{volume}}" />
+      <span class="musslop-vol-num">{{volume}}%</span>
+    </label>
+    {{#if isGM}}<span class="musslop-players">{{localize "MUSSLOP.PlayersHear" n=players}}</span>{{/if}}
+  </footer>
+</div>
