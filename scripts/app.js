@@ -29,6 +29,8 @@ export class MusslopDesk extends HandlebarsApplicationMixin(ApplicationV2) {
       mode: MusslopDesk.#onMode,
       part: MusslopDesk.#onPart,
       scene: MusslopDesk.#onScene,
+      togglePacks: MusslopDesk.#onTogglePacks,
+      installTrack: MusslopDesk.#onInstallTrack,
     },
   };
 
@@ -38,6 +40,7 @@ export class MusslopDesk extends HandlebarsApplicationMixin(ApplicationV2) {
     super(...args);
     this._unsub = controller.onChange(() => this._throttledRender());
     this._eta = null;
+    this.packsOpen = false;
   }
 
   _throttledRender() {
@@ -77,6 +80,17 @@ export class MusslopDesk extends HandlebarsApplicationMixin(ApplicationV2) {
         on: playing && p.loopIndex === i, queued: pending === i, color: colorOf(i),
       })),
       players: game.users.filter(u => u.active && !u.isGM).length,
+      packsOpen: this.packsOpen,
+      packsLoading: this.packsOpen && controller.packs === null,
+      packs: (controller.packs || []).map(pk => {
+        const installed = controller.installedSlugs();
+        return { ...pk, tracks: (pk.tracks || []).map(tr => ({
+          ...tr, installed: installed.has(tr.slug),
+          installing: controller.installing?.slug === tr.slug ? controller.installing : null,
+          pct: controller.installing?.slug === tr.slug && controller.installing.total ? Math.round(controller.installing.done / controller.installing.total * 100) : null,
+        })) };
+      }),
+      installingAny: !!controller.installing,
       volume: Math.round(game.settings.get(MODULE_ID, "volume") * 100),
     };
   }
@@ -116,7 +130,17 @@ export class MusslopDesk extends HandlebarsApplicationMixin(ApplicationV2) {
   // ---- actions (this = app)
   static async #onSelectTrack(ev, el) { if (game.user.isGM) await controller.loadTrack(el.dataset.slug); }
   static #onImportZip() { this.element.querySelector("input[name=zip]")?.click(); }
-  static async #onRefresh() { await controller.refreshLibrary(); }
+  static async #onRefresh() { await controller.refreshLibrary(); if (this.packsOpen) await controller.refreshPacks(); }
+  static async #onTogglePacks() {
+    this.packsOpen = !this.packsOpen;
+    this.render();
+    if (this.packsOpen && controller.packs === null) await controller.refreshPacks();
+  }
+  static async #onInstallTrack(ev, el) {
+    const pk = controller.packs?.find(p => p.id === el.dataset.pack);
+    const tr = pk?.tracks?.find(t => t.slug === el.dataset.slug);
+    if (tr) await controller.installTrack(tr);
+  }
   static #onPlay() { controller.play(controller.player?.loopIndex || 0); }
   static #onStop() { controller.stop(); }
   static #onNext() { controller.advance(); }

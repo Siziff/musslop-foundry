@@ -8,10 +8,39 @@
       <h3>{{localize "MUSSLOP.Tracks"}}</h3>
       {{#if isGM}}
         <button type="button" data-action="importZip" title="{{localize 'MUSSLOP.ImportZipHint'}}"><i class="fa-solid fa-file-import"></i> {{localize "MUSSLOP.ImportZip"}}</button>
+        <button type="button" class="{{#if packsOpen}}on{{/if}}" data-action="togglePacks" title="{{localize 'MUSSLOP.PacksHint'}}"><i class="fa-solid fa-box-open"></i> {{localize "MUSSLOP.Packs"}}</button>
         <button type="button" class="icon" data-action="refresh" title="{{localize 'MUSSLOP.Refresh'}}"><i class="fa-solid fa-rotate"></i></button>
         <input type="file" name="zip" accept=".zip" hidden />
       {{/if}}
     </header>
+    {{#if packsOpen}}
+    <div class="musslop-packs">
+      <p class="musslop-hint">{{localize "MUSSLOP.PacksIntro"}}</p>
+      {{#if packsLoading}}<p class="musslop-hint"><i class="fa-solid fa-spinner fa-spin"></i> {{localize "MUSSLOP.PacksLoading"}}</p>{{/if}}
+      {{#each packs}}
+        <div class="musslop-pack">
+          <div class="musslop-pack-head">
+            <b>{{name}}</b>
+            {{#if error}}<span class="err">{{error}}</span>{{else}}<span class="meta">{{license}}{{#if credits}} · {{credits}}{{/if}}</span>{{/if}}
+          </div>
+          {{#if description}}<p class="musslop-hint">{{description}}</p>{{/if}}
+          {{#each tracks}}
+            <div class="musslop-pack-track {{#if installed}}installed{{/if}}">
+              <span class="name">{{name}}</span>
+              <span class="meta">{{artist}} · {{size_mb}} MB{{#if url}} · <a href="{{url}}" target="_blank" rel="noopener">source</a>{{/if}}</span>
+              {{#if installed}}
+                <span class="state"><i class="fa-solid fa-check"></i> {{localize "MUSSLOP.Installed"}}</span>
+              {{else if installing}}
+                <span class="state"><i class="fa-solid fa-spinner fa-spin"></i> {{#if pct}}{{pct}}%{{else}}{{installing.phase}}{{/if}}</span>
+              {{else}}
+                <button type="button" class="small" data-action="installTrack" data-pack="{{../id}}" data-slug="{{slug}}" {{#if ../../installingAny}}disabled{{/if}}><i class="fa-solid fa-download"></i> {{localize "MUSSLOP.Install"}}</button>
+              {{/if}}
+            </div>
+          {{/each}}
+        </div>
+      {{/each}}
+    </div>
+    {{/if}}
     {{#if tracks.length}}
       <div class="musslop-track-list">
         {{#each tracks}}

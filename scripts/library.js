@@ -46,7 +46,7 @@ export async function fetchTrackFile(track, file) {
 /**
  * Import a *_foundry.zip produced by musslop: unpack in the browser (JSZip
  * ships with Foundry) and upload each file to Data/musslop/<slug>/.
- * @param {File} zipFile
+ * @param {File|Blob} zipFile
  * @param {(done:number,total:number,name:string)=>void} [onProgress]
  * @returns {{slug:string, dir:string, files:number, manifest:object}}
  */
@@ -58,7 +58,7 @@ export async function importZip(zipFile, onProgress) {
   if (!manifestEntry) throw new Error("manifest.json not found — is this a musslop export?");
   const manifest = JSON.parse(await manifestEntry.async("string"));
   if (manifest.format !== "musslop-loops") throw new Error("Not a musslop-loops manifest");
-  const slug = (manifest.slug || manifest.track || zipFile.name.replace(/_foundry\.zip$|\.zip$/i, ""))
+  const slug = (manifest.slug || manifest.track || (zipFile.name || "track").replace(/_foundry\.zip$|\.zip$/i, ""))
     .replace(/[^\w\-]+/g, "_").replace(/^_+|_+$/g, "") || "track";
   const dir = `${ROOT_DIR}/${slug}`;
   await ensureDir(ROOT_DIR);
@@ -77,4 +77,47 @@ export async function importZip(zipFile, onProgress) {
     onProgress?.(done, entries.length, name);
   }
   return { slug, dir, files: done, manifest };
+}
+
+// ------------------------------------------------------------------ packs
+/**
+ * Pack sources are JSON indexes (default: the official one in this repo):
+ * { "format": "musslop-packs", "version": 1,
+ *   "packs": [{ "id", "name", "description", "tags": [], "license", "credits",
+ *               "tracks": [{ "slug", "name", "artist", "zip", "size_mb", "license", "url" }] }] }
+ * Each track zip is a regular musslop *_foundry.zip (one track per zip), so a
+ * GM can install single tracks and the files stay small.
+ */
+export const DEFAULT_PACK_INDEX = "https://raw.githubusercontent.com/Siziff/musslop-foundry/main/packs/index.json";
+
+export async function fetchPackIndexes(urls) {
+  const out = [];
+  for (const url of urls) {
+    try {
+      const r = await fetch(url, { cache: "no-store" });
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      const idx = await r.json();
+      if (idx.format !== "musslop-packs") throw new Error("not a musslop-packs index");
+      for (const p of idx.packs || []) out.push({ ...p, source: url });
+    } catch (e) { log.warn("pack index failed", url, e); out.push({ id: `err:${url}`, name: url, error: String(e.message || e), tracks: [] }); }
+  }
+  return out;
+}
+
+/** Download a track zip from a pack and import it. */
+export async function installPackTrack(track, onProgress) {
+  const r = await fetch(track.zip);
+  if (!r.ok) throw new Error(`${track.name}: HTTP ${r.status}`);
+  const total = +r.headers.get("Content-Length") || 0;
+  const reader = r.body.getReader();
+  const chunks = []; let got = 0;
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    chunks.push(value); got += value.length;
+    onProgress?.("download", got, total);
+  }
+  const blob = new Blob(chunks, { type: "application/zip" });
+  blob.name = `${track.slug}_foundry.zip`;
+  return importZip(blob, (d, n, name) => onProgress?.("upload", d, n, name));
 }

@@ -41,5 +41,13 @@
   "MUSSLOP.Setting.Volume": "Music volume (this client)",
   "MUSSLOP.Setting.VolumeHint": "Local volume for musslop playback. The GM's cue timing is shared; volume is per player.",
   "MUSSLOP.Setting.Tails": "Post-exit tails",
-  "MUSSLOP.Setting.TailsHint": "Let the previous section ring out ~1 s over the new one (uses *_tail.wav if present)."
+  "MUSSLOP.Setting.TailsHint": "Let the previous section ring out ~1 s over the new one (uses *_tail.wav if present).",
+  "MUSSLOP.Packs": "Packs",
+  "MUSSLOP.PacksHint": "Ready-made tracks (Creative Commons) — install with one click",
+  "MUSSLOP.PacksIntro": "Free, properly licensed tracks already cut into loops with musslop. Installing downloads one track to Data/musslop/ on this server; players need nothing. Credit the artists in your game notes (CC-BY).",
+  "MUSSLOP.PacksLoading": "Fetching pack index…",
+  "MUSSLOP.Install": "Install",
+  "MUSSLOP.Installed": "installed",
+  "MUSSLOP.Setting.PackSources": "Extra pack sources",
+  "MUSSLOP.Setting.PackSourcesHint": "Additional pack index URLs (one per line or space-separated). The official index is always included."
 }

@@ -16,7 +16,7 @@
  */
 import { MODULE_ID, SOCKET, log, i18n } from "./const.js";
 import { MusslopPlayer } from "./loop-player.js";
-import { scanLibrary, fetchTrackFile } from "./library.js";
+import { scanLibrary, fetchTrackFile, fetchPackIndexes, installPackTrack, DEFAULT_PACK_INDEX } from "./library.js";
 
 class Controller {
   constructor() {
@@ -24,6 +24,8 @@ class Controller {
     this.tracks = [];            // library entries
     this.track = null;           // currently loaded entry
     this.loading = null;         // {done,total} while loading buffers
+    this.packs = null;           // pack index entries (null = not fetched yet)
+    this.installing = null;      // {slug, phase, done, total}
     this.mode = "natural";
     this.listeners = new Set();
     this._stateTimer = null;
@@ -50,6 +52,31 @@ class Controller {
     this.tracks = await scanLibrary();
     this.emit();
     return this.tracks;
+  }
+
+  // ------------------------------------------------------------ packs
+  packSources() {
+    const extra = (game.settings.get(MODULE_ID, "packSources") || "").split(/\s+/).filter(Boolean);
+    return [DEFAULT_PACK_INDEX, ...extra];
+  }
+  async refreshPacks() {
+    this.packs = await fetchPackIndexes(this.packSources());
+    this.emit();
+    return this.packs;
+  }
+  installedSlugs() { return new Set(this.tracks.map(t => t.slug)); }
+  async installTrack(track) {
+    if (this.installing) return;
+    this.installing = { slug: track.slug, phase: "download", done: 0, total: 0 };
+    this.emit();
+    try {
+      await installPackTrack(track, (phase, done, total) => { this.installing = { slug: track.slug, phase, done, total }; this.emit(); });
+      await this.refreshLibrary();
+      ui.notifications?.info(`musslop: ${track.name} installed`);
+    } catch (e) {
+      ui.notifications?.error(`musslop: ${track.name} — ${e.message || e}`);
+      log.error(e);
+    } finally { this.installing = null; this.emit(); }
   }
 
   // ------------------------------------------------------------ actions (GM or replay)

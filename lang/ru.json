@@ -41,5 +41,13 @@
   "MUSSLOP.Setting.Volume": "Громкость музыки (этот клиент)",
   "MUSSLOP.Setting.VolumeHint": "Локальная громкость musslop. Тайминг переходов задаёт мастер, громкость — у каждого своя.",
   "MUSSLOP.Setting.Tails": "Хвосты переходов",
-  "MUSSLOP.Setting.TailsHint": "Дать предыдущей секции дозвучать ~1 с поверх новой (использует *_tail.wav, если есть)."
+  "MUSSLOP.Setting.TailsHint": "Дать предыдущей секции дозвучать ~1 с поверх новой (использует *_tail.wav, если есть).",
+  "MUSSLOP.Packs": "Паки",
+  "MUSSLOP.PacksHint": "Готовые треки (Creative Commons) — установка в один клик",
+  "MUSSLOP.PacksIntro": "Бесплатные лицензионные треки, уже нарезанные на лупы в musslop. Установка скачивает один трек в Data/musslop/ на этом сервере; игрокам ничего не нужно. Укажите авторов в заметках к игре (CC-BY).",
+  "MUSSLOP.PacksLoading": "Загружаю индекс паков…",
+  "MUSSLOP.Install": "Установить",
+  "MUSSLOP.Installed": "установлен",
+  "MUSSLOP.Setting.PackSources": "Дополнительные источники паков",
+  "MUSSLOP.Setting.PackSourcesHint": "URL индексов паков (через пробел или с новой строки). Официальный индекс подключён всегда."
 }

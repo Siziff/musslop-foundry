@@ -9,6 +9,11 @@ Hooks.once("init", () => {
     range: { min: 0, max: 1, step: 0.01 },
     onChange: v => controller.player?.setVolume(v),
   });
+  game.settings.register(MODULE_ID, "packSources", {
+    name: "MUSSLOP.Setting.PackSources", hint: "MUSSLOP.Setting.PackSourcesHint",
+    scope: "world", config: true, type: String, default: "",
+    onChange: () => controller.refreshPacks(),
+  });
   game.settings.register(MODULE_ID, "tails", {
     name: "MUSSLOP.Setting.Tails", hint: "MUSSLOP.Setting.TailsHint",
     scope: "client", config: true, type: Boolean, default: true,
